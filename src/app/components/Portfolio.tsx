@@ -92,20 +92,26 @@ const Portfolio = () => {
     });
   };
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Replace these with your actual EmailJS IDs
+    // Get environment variables
     const serviceID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
     const templateID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
     const userID = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
 
+    // Check if environment variables are defined
+    if (!serviceID || !templateID || !userID) {
+      console.error("EmailJS environment variables are not set.");
+      alert("Failed to send the message. Please check your configuration.");
+      return;
+    }
+
+    // Send the email
     emailjs.send(serviceID, templateID, formData, userID).then(
       (response) => {
         console.log("SUCCESS!", response.status, response.text);
         alert("Message sent successfully!");
-
-        // Reset formData to initial state
         setFormData({
           name: "",
           email: "",
