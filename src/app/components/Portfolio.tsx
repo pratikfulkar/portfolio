@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { motion,useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import emailjs from "@emailjs/browser";
 
 import {
   Code,
@@ -20,23 +21,14 @@ import {
   ShoppingCart,
   Users,
   Folder,
-  Linkedin
+  Linkedin,
 } from "lucide-react";
 import profile from "../assets/pratik_profile.jpg";
 
 const Counter = ({ end, duration = 2 }: any) => {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
-  const isInView = useInView(ref);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (isInView && !hasAnimated) {
-      setHasAnimated(true);
-      // Trigger your animation logic here
-    }
-  }, [isInView, hasAnimated]);
-  
+  const isInView = useInView(ref, { once: true }); // Trigger animation only once
 
   useEffect(() => {
     if (isInView) {
@@ -64,12 +56,9 @@ const Counter = ({ end, duration = 2 }: any) => {
     }
   }, [end, duration, isInView]);
 
-  return (
-    <span ref={ref}>
-      +{count}
-    </span>
-  );
+  return <span ref={ref}>+{count}</span>;
 };
+
 const Portfolio = () => {
   const [activeSection, setActiveSection] = useState("about");
   // Create refs with proper typing
@@ -79,8 +68,51 @@ const Portfolio = () => {
   const skillsRef = useRef<HTMLDivElement>(null);
   const achievementsRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true }); // Trigger animation only once
 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    contactNumber: "",
+    message: "",
+  });
 
+  const handleChange = (e: { target: { name: any; value: any } }) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+
+    // Replace these with your actual EmailJS IDs
+    const serviceID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+    const templateID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+    const userID = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
+
+    emailjs.send(serviceID, templateID, formData, userID).then(
+      (response) => {
+        console.log("SUCCESS!", response.status, response.text);
+        alert("Message sent successfully!");
+
+        // Reset formData to initial state
+        setFormData({
+          name: "",
+          email: "",
+          contactNumber: "",
+          message: "",
+        });
+      },
+      (error) => {
+        console.log("FAILED...", error);
+        alert("Failed to send the message, please try again.");
+      }
+    );
+  };
   // Mapping of section IDs to their corresponding refs
   const sectionRefs = {
     about: aboutRef,
@@ -416,8 +448,8 @@ const Portfolio = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header - Same as before */}
+    <div className="min-h-screen bg-gray-900 text-white relative">
+      {/* Header*/}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -450,80 +482,81 @@ const Portfolio = () => {
           </nav>
         </div>
       </motion.header>
-        {/* Animated Background Lines */}
-  <motion.div
-    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-    initial={{ opacity: 0 }}
-    animate={{
-      opacity: [0, 0.1, 0],
-      backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
-    }}
-    transition={{
-      duration: 10,
-      repeat: Infinity,
-      ease: "linear",
-    }}
-    style={{
-      backgroundImage:
-        "linear-gradient(45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%, transparent 50%, rgba(59, 130, 246, 0.1) 50%, rgba(59, 130, 246, 0.1) 75%, transparent 75%, transparent)",
-      backgroundSize: "40px 40px",
-    }}
-  />
-      {/* Previous header and navigation code remains the same... */}
+      {/* Animated Background Lines */}
+      <motion.div
+        className="fixed top-0 left-0 w-full h-full pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: [0, 0.1, 0],
+          backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        style={{
+          backgroundImage:
+            "linear-gradient(45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%, transparent 50%, rgba(59, 130, 246, 0.1) 50%, rgba(59, 130, 246, 0.1) 75%, transparent 75%, transparent)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
-      <main className="max-w-6xl mx-auto p-6 py-20">
+      <main className="max-w-6xl mx-auto p-6 py-20 relative z-10">
         {/* About Section  */}
-          <div
-            ref={aboutRef}
-            className="flex flex-col md:flex-row items-center space-y-8 md:space-y-0 md:space-x-12"
-          >
-            {/* Profile Image with Hover Effect */}
-            <div className="text-center space-y-4">
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: 2 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="w-64 h-64 rounded-full border-4 border-blue-400 overflow-hidden shadow-2xl relative group"
-              >
-                <img
-                  src={profile.src}
-                  alt="Pratik Fulkar"
-                  className="w-full h-full object-cover group-hover:blur-sm transition-all duration-300"
-                />
-                <div className="absolute inset-0 bg-blue-500/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                  <ArrowUpRight className="text-white w-12 h-12" />
-                </div>
-              </motion.div>
-              <h1 className="text-3xl font-bold text-center mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                Pratik Fulkar
-              </h1>
-            </div>
+        <div
+          ref={aboutRef}
+          className="flex flex-col md:flex-row items-center space-y-8 md:space-y-0 md:space-x-12"
+        >
+          {/* Profile Image with Hover Effect */}
+          <div className="text-center space-y-4">
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 2 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="w-64 h-64 rounded-full border-4 border-blue-400 overflow-hidden shadow-2xl relative group"
+            >
+              <img
+                src={profile.src}
+                alt="Pratik Fulkar"
+                className="w-full h-full object-cover group-hover:blur-sm transition-all duration-300"
+              />
+              <div className="absolute inset-0 bg-blue-500/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                <ArrowUpRight className="text-white w-12 h-12" />
+              </div>
+            </motion.div>
+            <h1 className="text-3xl font-bold text-center mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              Pratik Fulkar
+            </h1>
+          </div>
 
-            <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold text-blue-400">
-                SOFTWARE ENGINEER
-              </h2>
-              <p className="text-gray-300 leading-relaxed">
-                Passionate about creating intuitive and engaging user
-                experiences. Specialize in transforming ideas into beautifully
-                crafted products.
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-  {stats.map((stat, index) => (
-    <motion.div
-      key={index}
-      whileHover={{ scale: 1.1, rotate: 5 }}
-      className={`bg-gray-700/50 p-4 rounded-lg border border-gray-600/50 hover:border-${stat.color}-400 transition-all duration-300`}
-    >
-      <stat.icon className={`mx-auto mb-2 text-${stat.color}-400`} />
-      <h3 className={`font-bold text-2xl text-${stat.color}-400`}>
-        <Counter end={stat.value} />
-      </h3>
-      <p className="text-sm text-gray-400">{stat.label}</p>
-    </motion.div>
-  ))}
-</div>
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold text-blue-400">
+              SOFTWARE ENGINEER
+            </h2>
+            <p className="text-gray-300 leading-relaxed">
+              Passionate about creating intuitive and engaging user experiences.
+              Specialize in transforming ideas into beautifully crafted
+              products.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className={`bg-gray-700/50 p-4 rounded-lg border border-gray-600/50 hover:border-${stat.color}-400 transition-all duration-300`}
+                >
+                  <stat.icon
+                    className={`mx-auto mb-2 text-${stat.color}-400`}
+                  />
+                  <h3 className={`font-bold text-2xl text-${stat.color}-400`}>
+                    <Counter end={stat.value} />
+                  </h3>
+                  <p className="text-sm text-gray-400">{stat.label}</p>
+                </motion.div>
+              ))}
             </div>
           </div>
+        </div>
 
         {/* Projects Section - New Addition */}
         <motion.div // Changed from motion.section to motion.div
@@ -688,7 +721,7 @@ const Portfolio = () => {
         </motion.div>
 
         {/* Skills Section */}
-        <motion.div // Changed from motion.section to motion.div
+        {/* <motion.div // Changed from motion.section to motion.div
           ref={skillsRef}
           className="min-h-screen py-12"
         >
@@ -702,6 +735,27 @@ const Portfolio = () => {
                 key={index}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                className="bg-gray-800 p-4 rounded-lg text-center hover:bg-gray-700 transition-colors"
+              >
+                {skill}
+              </motion.div>
+            ))}
+          </div>
+        </motion.div> */}
+        <motion.div ref={skillsRef} className="min-h-screen py-12">
+          <h3 className="text-2xl font-bold mb-8 flex items-center">
+            <Code className="mr-2" />
+            Skills & Technologies
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {skills.map((skill, index) => (
+              <motion.div
+                key={index}
+                ref={ref}
+                initial={{ scale: 0 }}
+                animate={isInView ? { scale: 1 } : { scale: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.05 }}
                 className="bg-gray-800 p-4 rounded-lg text-center hover:bg-gray-700 transition-colors"
@@ -747,112 +801,142 @@ const Portfolio = () => {
           </div>
         </motion.div> */}
         {/* Contact Section */}
-<motion.div
-  ref={contactRef}
-  className="py-12"
->
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-    {/* Left Side - Contact Info */}
-    <div>
-      <h3 className="text-2xl font-bold mb-8 flex items-center">
-        <Mail className="mr-2" />
-        Get in Touch
-      </h3>
-      <div className="flex flex-col space-y-4">
-        <motion.a
-          href="mailto:pratik.fwork@gmail.com"
-          whileHover={{ x: 10 }}
-          className="flex items-center text-blue-400 hover:text-blue-300"
-        >
-          <Mail className="mr-2" /> pratik.fwork@gmail.com
-        </motion.a>
-        <motion.a
-          href="tel:+919763021186"
-          whileHover={{ x: 10 }}
-          className="flex items-center text-blue-400 hover:text-blue-300"
-        >
-          <Phone className="mr-2" /> +91 9763021186
-        </motion.a>
-        <motion.a
-          href="https://www.linkedin.com/in/pratik-fulkar-00/"
-          target="_blank"
-          whileHover={{ x: 10 }}
-          className="flex items-center text-blue-400 hover:text-blue-300"
-        >
-          <Linkedin className="mr-2" /> LinkedIn
-        </motion.a>
-      </div>
-    </div>
+        <motion.div ref={contactRef} className="py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Side - Contact Info */}
+            <div>
+              <h3 className="text-2xl font-bold mb-8 flex items-center">
+                <Mail className="mr-2" />
+                Get in Touch
+              </h3>
+              <div className="flex flex-col space-y-4">
+                <motion.a
+                  href="mailto:pratik.fwork@gmail.com"
+                  whileHover={{ x: 10 }}
+                  className="flex items-center text-blue-400 hover:text-blue-300"
+                >
+                  <Mail className="mr-2" /> pratik.fwork@gmail.com
+                </motion.a>
+                <motion.a
+                  href="tel:+919763021186"
+                  whileHover={{ x: 10 }}
+                  className="flex items-center text-blue-400 hover:text-blue-300"
+                >
+                  <Phone className="mr-2" /> +91 9763021186
+                </motion.a>
+                <motion.a
+                  href="https://www.linkedin.com/in/pratik-fulkar-00/"
+                  target="_blank"
+                  whileHover={{ x: 10 }}
+                  className="flex items-center text-blue-400 hover:text-blue-300"
+                >
+                  <Linkedin className="mr-2" /> LinkedIn
+                </motion.a>
+              </div>
+            </div>
 
-    {/* Right Side - Let's Work Together Form */}
-    <div>
-      <h3 className="text-2xl font-bold mb-8 flex items-center">
-        <MessageCircle className="mr-2" />
-        LET'S WORK TOGETHER
-      </h3>
-      <form className="space-y-6">
-        {/* Name Field */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-300">
-            Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            placeholder="Your Name"
-            className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+            {/* Right Side - Let's Work Together Form */}
+            <div>
+              <h3 className="text-2xl font-bold mb-8 flex items-center">
+                <MessageCircle className="mr-2" />
+                LET'S WORK TOGETHER
+              </h3>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-300"
+                  >
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Your Name"
+                    className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
 
-        {/* Email Field */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            placeholder="Your@email.com"
-            className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-300"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Your@email.com"
+                    className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="contactNumber"
+                    className="block text-sm font-medium text-gray-300"
+                  >
+                    Contact Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="contactNumber"
+                    name="contactNumber"
+                    value={formData.contactNumber}
+                    onChange={handleChange}
+                    placeholder="Your Contact Number"
+                    className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
 
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-300"
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows={4}
+                    placeholder="Message"
+                    className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
 
-        {/* Message Field */}
-        <div>
-          <label htmlFor="message" className="block text-sm font-medium text-gray-300">
-            Message
-          </label>
-          <textarea
-            id="message"
-            rows={4}
-            placeholder="Message"
-            className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition-colors"
-        >
-          Send Message
-        </button>
-      </form>
-    </div>
-  </div>
-</motion.div>
-
-
+                <button
+                  type="submit"
+                  className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </motion.div>
       </main>
       {/* Footer Section */}
-<footer className="bg-gray-800 py-6 mt-12">
-  <div className="max-w-6xl mx-auto px-4 text-center">
-    <p className="text-gray-400">
-      &copy; {new Date().getFullYear()} Pratik Fulkar. All rights reserved.
-    </p>
-  </div>
-</footer>
+      <footer className="bg-gray-800 py-6 mt-12 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <p className="text-gray-400">
+            &copy; {new Date().getFullYear()} Pratik Fulkar. All rights
+            reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
