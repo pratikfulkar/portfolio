@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import emailjs from "@emailjs/browser";
+import Image from "next/image";
 
 import {
   Code,
@@ -25,7 +26,12 @@ import {
 } from "lucide-react";
 import profile from "../assets/pratik_profile.jpg";
 
-const Counter = ({ end, duration = 2 }: any) => {
+interface CounterProps {
+  end: number;
+  duration?: number;
+}
+
+const Counter = ({ end, duration = 2 }: CounterProps) => {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true }); // Trigger animation only once
@@ -515,9 +521,11 @@ const Portfolio = () => {
               transition={{ type: "spring", stiffness: 300 }}
               className="w-64 h-64 rounded-full border-4 border-blue-400 overflow-hidden shadow-2xl relative group"
             >
-              <img
+              <Image
                 src={profile.src}
                 alt="Pratik Fulkar"
+                width={256} // Set the width
+                height={256} // Set the height
                 className="w-full h-full object-cover group-hover:blur-sm transition-all duration-300"
               />
               <div className="absolute inset-0 bg-blue-500/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
@@ -533,10 +541,10 @@ const Portfolio = () => {
             <h2 className="text-2xl font-bold text-blue-400">
               SOFTWARE ENGINEER
             </h2>
-            <p className="text-gray-300 leading-relaxed">
+            <p className="mt-4 text-gray-300">
               Passionate about creating intuitive and engaging user experiences.
               Specialize in transforming ideas into beautifully crafted
-              products.
+              products&apos;.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
               {stats.map((stat, index) => (
