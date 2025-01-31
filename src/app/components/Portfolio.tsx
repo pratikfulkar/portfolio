@@ -25,6 +25,13 @@ import {
   Linkedin,
 } from "lucide-react";
 import profile from "../assets/pratik_profile.jpg";
+type SectionId =
+  | "about"
+  | "experience"
+  | "projects"
+  | "skills"
+  | "achievements"
+  | "contact";
 
 interface CounterProps {
   end: number;
@@ -125,8 +132,11 @@ const Portfolio = () => {
       }
     );
   };
-  // Mapping of section IDs to their corresponding refs
-  const sectionRefs = {
+  // Define sectionRefs with the SectionId type
+  const sectionRefs: Record<
+    SectionId,
+    React.RefObject<HTMLDivElement | null>
+  > = {
     about: aboutRef,
     experience: experienceRef,
     projects: projectsRef,
@@ -135,10 +145,10 @@ const Portfolio = () => {
     contact: contactRef,
   };
 
-  // Updated type for scrollToSection function
+  // Update scrollToSection to accept SectionId
   const scrollToSection = (
-    sectionRef: React.RefObject<HTMLDivElement>,
-    section: string
+    sectionRef: React.RefObject<HTMLDivElement | null>,
+    section: SectionId
   ) => {
     if (sectionRef.current) {
       sectionRef.current.scrollIntoView({ behavior: "smooth" });
@@ -471,12 +481,12 @@ const Portfolio = () => {
         <div className="max-w-6xl mx-auto flex justify-center items-center">
           <nav className="flex space-x-6">
             {[
-              { id: "about", icon: <User size={24} /> },
-              { id: "experience", icon: <Briefcase size={24} /> },
-              { id: "projects", icon: <Folder size={24} /> },
-              { id: "skills", icon: <Code size={24} /> },
-              { id: "achievements", icon: <Award size={24} /> },
-              { id: "contact", icon: <Mail size={24} /> },
+              { id: "about" as SectionId, icon: <User size={24} /> },
+              { id: "experience" as SectionId, icon: <Briefcase size={24} /> },
+              { id: "projects" as SectionId, icon: <Folder size={24} /> },
+              { id: "skills" as SectionId, icon: <Code size={24} /> },
+              { id: "achievements" as SectionId, icon: <Award size={24} /> },
+              { id: "contact" as SectionId, icon: <Mail size={24} /> },
             ].map(({ id, icon }) => (
               <motion.button
                 key={id}
